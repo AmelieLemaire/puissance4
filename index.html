@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puissance 4</title>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+</head>
+
+<body>
+    <label for="x-select">Nombre de colonnes (X) :</label>
+    <select id="x-select">
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6" selected>6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+    </select>
+
+    <label for="y-select">Nombre de lignes (Y) :</label>
+    <select id="y-select">
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6" selected>6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+    </select>
+
+    <label for="color1-select">Couleur Joueur 1 :</label>
+    <select id="color1-select">
+        <option value="yellow">Jaune</option>
+        <option value="red" selected>Rouge</option>
+        <option value="blue">Bleu</option>
+        <option value="green">Vert</option>
+    </select>
+
+    <label for="color2-select">Couleur Joueur 2 :</label>
+    <select id="color2-select">
+        <option value="yellow">Jaune</option>
+        <option value="red">Rouge</option>
+        <option value="blue">Bleu</option>
+        <option value="green" selected>Vert</option>
+    </select>
+
+    <div id="grid-container"></div>
+
+    <script>
+        const xSelect = document.getElementById('x-select');
+        const ySelect = document.getElementById('y-select');
+        const color1Select = document.getElementById('color1-select');
+        const color2Select = document.getElementById('color2-select');
+        const gridContainer = document.getElementById('grid-container');
+        let currentPlayer = 1;
+        let gameBoard = [];
+
+        function initializeBoard() {
+            const xSize = parseInt(xSelect.value);
+            const ySize = parseInt(ySelect.value);
+            gameBoard = [];
+            for (let i = 0; i < ySize; i++) {
+                gameBoard.push(new Array(xSize).fill(0));
+            }
+        }
+
+        function generateGrid() {
+            initializeBoard();
+
+            let gridHTML = '<table>';
+            const xSize = parseInt(xSelect.value);
+            const ySize = parseInt(ySelect.value);
+            for (let i = 0; i < ySize; i++) {
+                gridHTML += '<tr>';
+                for (let j = 0; j < xSize; j++) {
+                    gridHTML += `<td class='cell' data-x='${j}' data-y='${i}'></td>`;
+                }
+                gridHTML += '</tr>';
+            }
+            gridHTML += '</table>';
+            gridContainer.innerHTML = gridHTML;
+
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const x = parseInt(cell.dataset.x);
+                    const y = parseInt(cell.dataset.y);
+                    dropToken(x);
+                });
+            });
+        }
+
+        function dropToken(x) {
+            let y = gameBoard.length - 1;
+            while (y >= 0 && gameBoard[y][x] !== 0) {
+                y--;
+            }
+            if (y >= 0) {
+                gameBoard[y][x] = currentPlayer;
+                renderBoard();
+                if (checkWin(y, x)) {
+                    alert(`Joueur ${currentPlayer} a gagné !`);
+                    initializeBoard();
+                    renderBoard();
+                } else {
+                    currentPlayer = currentPlayer === 1 ? 2 : 1;
+                }
+            }
+        }
+
+        function checkWin(y, x) {
+            const xSize = gameBoard[0].length;
+            const ySize = gameBoard.length;
+
+            // Check horizontal
+            let count = 1;
+            for (let i = x - 1; i >= 0 && gameBoard[y][i] === currentPlayer; i--) {
+                count++;
+            }
+            for (let i = x + 1; i < xSize && gameBoard[y][i] === currentPlayer; i++) {
+                count++;
+            }
+            if (count >= 4) return true;
+
+            // Check vertical
+            count = 1;
+            for (let i = y - 1; i >= 0 && gameBoard[i][x] === currentPlayer; i--) {
+                count++;
+            }
+            for (let i = y + 1; i < ySize && gameBoard[i][x] === currentPlayer; i++) {
+                count++;
+            }
+            if (count >= 4) return true;
+
+            // Check diagonal
+            count = 1;
+            for (let i = 1; i < 4; i++) {
+                if (x + i < xSize && y + i < ySize && gameBoard[y + i][x + i] === currentPlayer) count++;
+                else break;
+            }
+            for (let i = 1; i < 4; i++) {
+                if (x - i >= 0 && y - i >= 0 && gameBoard[y - i][x - i] === currentPlayer) count++;
+                else break;
+            }
+            if (count >= 4) return true;
+
+            // Check anti-diagonal
+            count = 1;
+            for (let i = 1; i < 4; i++) {
+                if (x + i < xSize && y - i >= 0 && gameBoard[y - i][x + i] === currentPlayer) count++;
+                else break;
+            }
+            for (let i = 1; i < 4; i++) {
+                if (x - i >= 0 && y + i < ySize && gameBoard[y + i][x - i] === currentPlayer) count++;
+                else break;
+            }
+            if (count >= 4) return true;
+
+            return false;
+        }
+
+
+        function renderBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const x = parseInt(cell.dataset.x);
+                const y = parseInt(cell.dataset.y);
+                if (gameBoard[y][x] === 0) {
+                    cell.style.backgroundColor = 'white';
+                } else if (gameBoard[y][x] === 1) {
+                    cell.style.backgroundColor = color1Select.value;
+                } else {
+                    cell.style.backgroundColor = color2Select.value;
+                }
+            });
+        }
+
+        xSelect.addEventListener('change', generateGrid);
+        ySelect.addEventListener('change', generateGrid);
+        color1Select.addEventListener('change', renderBoard);
+        color2Select.addEventListener('change', renderBoard);
+
+        generateGrid();
+    </script>
+</body>
+
+</html>

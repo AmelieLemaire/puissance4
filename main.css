@@ -1,0 +1,15 @@
+td {
+    border: solid black 3px;
+    border-radius: 20px;
+    width: 30px;
+    height: 30px;
+    background-color: white;
+}
+
+table {
+    background-color: blue;
+    border: black solid 3px;  
+    margin: auto;
+    margin-top: 20px;
+    width: fit-content;
+}
